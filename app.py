@@ -8,7 +8,7 @@ from streamlit_modal import Modal
 
 # --- Configuração da Página ---
 st.set_page_config(
-    page_title="InjetorasF4",
+    page_title="Dashboard de Injetoras",
     page_icon="🏭",
     layout="wide"
 )
@@ -55,7 +55,7 @@ ICONS = {
 
 # --- Barra Lateral e Navegação ---
 st.sidebar.title("Navegação")
-page = st.sidebar.radio("Menu", ["Geral", "Cards Injetoras", "Gerenciar Injetoras"])
+page = st.sidebar.radio("Selecione uma página", ["Dashboard Geral", "Mapa de Cartões", "Gerenciar Equipamentos"])
 st.title(f"🏭 {page}")
 st.markdown("---")
 
@@ -81,7 +81,7 @@ if page == "Dashboard Geral":
         mask = df.apply(lambda row: any(search_query in str(val).lower() for val in row), axis=1)
         df_filtrado = df[mask]
 
-    st.header("Visão Geral Injetoras F4")
+    st.header("Visão Geral do Status")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total de Injetoras", f"{len(df)}")
     col2.metric("Conectadas (OPCUA)", f"{len(df[df['status_opcua'] == 'Conectado'])}")
@@ -96,7 +96,7 @@ if page == "Dashboard Geral":
     st.dataframe(df_display, use_container_width=True)
     st.caption("Status do Ping: 🟢 Online | 🔴 Offline | ⚪ Não Testado")
 
-elif page == "Cards de Injetoras":
+elif page == "Mapa de Cartões":
     modal = Modal(key="details-modal", title="Detalhes do Equipamento")
     if df.empty:
         st.warning("Nenhuma injetora cadastrada.")
@@ -153,7 +153,7 @@ elif page == "Cards de Injetoras":
             """
             html(modal_content_html, height=450, scrolling=True)
 
-elif page == "Gerenciar Injetoras":
+elif page == "Gerenciar Equipamentos":
     st.header("Gerenciar Injetoras")
     st.info("Para adicionar, editar ou remover, use a tabela interativa abaixo. Clique em 'Salvar Alterações' para persistir as mudanças no arquivo.")
 
@@ -196,5 +196,3 @@ elif page == "Gerenciar Injetoras":
             save_data(edited_df)
             st.success("Alterações salvas com sucesso!")
             st.rerun()
-
-
