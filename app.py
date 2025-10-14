@@ -158,18 +158,18 @@ elif page == "Gerenciar Equipamentos":
         st.header("Adicionar Nova Injetora")
         with st.form("form_adicionar", clear_on_submit=True):
             add_data = {}
-            add_data['tag'] = st.text_input("TAG da Injetora*")
-            add_data['grupo'] = st.selectbox("Grupo", ["A3", "A4", "A5"])
+            add_data['tag'] = st.text_input("ID da Injetora*")
+            add_data['grupo'] = st.selectbox("Anexo", ["A3", "A4", "A5"])
             add_data['ip_injetora'] = st.text_input("IP da Injetora")
-            add_data['ip_dosador'] = st.text_input("IP do Dosador")
-            add_data['id_dosador'] = st.text_input("ID do Dosador")
-            add_data['ip_coletor'] = st.text_input("IP do Coletor")
-            add_data['tag_ont'] = st.text_input("TAG da ONT")
-            add_data['status_opcua'] = st.selectbox("Status OPCUA", ["Conectado", "Não Conectado", "Indefinido"])
+            add_data['ip_dosador'] = st.text_input("IP do Dosador Motan")
+            add_data['id_dosador'] = st.text_input("ID do Dosador Motan")
+            add_data['ip_coletor'] = st.text_input("IP Syneco")
+            add_data['tag_ont'] = st.text_input("ID ONT")
+            add_data['status_opcua'] = st.selectbox("Status OPCUA", ["Conectado", "Não Conectado", "Sem OPCUA"])
             add_data['observacoes'] = st.text_area("Observações")
             if st.form_submit_button("Salvar Nova Injetora", type="primary"):
                 if not add_data['tag']:
-                    st.error("O campo 'TAG da Injetora' é obrigatório.")
+                    st.error("O campo 'ID da Injetora' é obrigatório.")
                 elif add_data['tag'] in df['tag'].astype(str).tolist():
                     st.error(f"A TAG '{add_data['tag']}' já existe.")
                 else:
@@ -218,14 +218,14 @@ elif page == "Gerenciar Equipamentos":
                     with st.form("form_editar_modal"):
                         st.subheader(f"Editando Injetora: {injetora_data['tag']}")
                         edit_data = {}
-                        edit_data['tag'] = st.text_input("TAG da Injetora*", value=injetora_data['tag'])
-                        edit_data['grupo'] = st.selectbox("Grupo", ["A3", "A4", "A5"], index=["A3", "A4", "A5"].index(injetora_data['grupo']))
+                        edit_data['tag'] = st.text_input("ID da Injetora*", value=injetora_data['tag'])
+                        edit_data['grupo'] = st.selectbox("Anexo", ["A3", "A4", "A5"], index=["A3", "A4", "A5"].index(injetora_data['grupo']))
                         edit_data['ip_injetora'] = st.text_input("IP da Injetora", value=injetora_data.get('ip_injetora', ''))
-                        edit_data['ip_dosador'] = st.text_input("IP do Dosador", value=injetora_data.get('ip_dosador', ''))
-                        edit_data['id_dosador'] = st.text_input("ID do Dosador", value=injetora_data.get('id_dosador', ''))
-                        edit_data['ip_coletor'] = st.text_input("IP do Coletor", value=injetora_data.get('ip_coletor', ''))
-                        edit_data['tag_ont'] = st.text_input("TAG da ONT", value=injetora_data.get('tag_ont', ''))
-                        edit_data['status_opcua'] = st.selectbox("Status OPCUA", ["Conectado", "Não Conectado", "Indefinido"], index=["Conectado", "Não Conectado", "Indefinido"].index(injetora_data['status_opcua']))
+                        edit_data['ip_dosador'] = st.text_input("IP do Dosador Motan", value=injetora_data.get('ip_dosador', ''))
+                        edit_data['id_dosador'] = st.text_input("ID do Dosador Motan", value=injetora_data.get('id_dosador', ''))
+                        edit_data['ip_coletor'] = st.text_input("IP Syneco", value=injetora_data.get('ip_coletor', ''))
+                        edit_data['tag_ont'] = st.text_input("ID ONT", value=injetora_data.get('tag_ont', ''))
+                        edit_data['status_opcua'] = st.selectbox("Status OPCUA", ["Conectado", "Não Conectado", "Sem OPCUA"], index=["Conectado", "Não Conectado", "Indefinido"].index(injetora_data['status_opcua']))
                         edit_data['observacoes'] = st.text_area("Observações", value=injetora_data.get('observacoes', ''))
                         
                         if st.form_submit_button("Salvar Alterações"):
@@ -237,4 +237,5 @@ elif page == "Gerenciar Equipamentos":
                                 save_data(df)
                                 st.success(f"Injetora {edit_data['tag']} atualizada!")
                                 edit_modal.close()
+
                                 st.rerun()
