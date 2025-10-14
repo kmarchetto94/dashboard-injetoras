@@ -18,7 +18,8 @@ DATA_FILE = "injetoras.csv"
 
 def load_data():
     if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE)
+        # Garante que a coluna 'tag_ont' seja lida como texto
+        return pd.read_csv(DATA_FILE, dtype={'tag_ont': str})
     else:
         return pd.DataFrame(columns=[
             'tag', 'grupo', 'ip_injetora', 'ip_dosador', 'id_dosador', 'ip_coletor',
@@ -152,17 +153,16 @@ elif page == "Mapa de Cartões":
             """
             html(modal_content_html, height=450, scrolling=True)
 
-# --- PÁGINA: Gerenciar Equipamentos (VERSÃO FINAL E SIMPLIFICADA) ---
+# --- PÁGINA: Gerenciar Equipamentos (VERSÃO FINAL COM st.data_editor) ---
 elif page == "Gerenciar Equipamentos":
     st.header("Gerenciar Injetoras")
-    st.info("Para adicionar, editar ou remover, use a tabela abaixo. Clique em 'Salvar Alterações' para persistir as mudanças.")
+    st.info("Para adicionar, editar ou remover, use a tabela interativa abaixo. Clique em 'Salvar Alterações' para persistir as mudanças no arquivo.")
 
-    # Usando st.data_editor para uma experiência de tabela completa e interativa
     edited_df = st.data_editor(
         df,
         hide_index=True,
         use_container_width=True,
-        num_rows="dynamic", # Permite adicionar e remover linhas
+        num_rows="dynamic",
         column_config={
             "grupo": st.column_config.SelectboxColumn(
                 "Anexo",
@@ -174,21 +174,21 @@ elif page == "Gerenciar Equipamentos":
                 options=["Conectado", "Não Conectado", "Sem OPCUA"],
                 required=True,
             ),
-            # Renomeando as colunas para o visual da tabela
             "tag": "ID da Injetora",
             "ip_injetora": "IP da Injetora",
             "ip_dosador": "IP Dosador Motan",
             "id_dosador": "ID Dosador Motan",
             "ip_coletor": "IP Syneco",
-            "tag_ont": "ID da ONT"
+            # AQUI ESTÁ A CORREÇÃO: Forçando a coluna a ser do tipo texto
+            "tag_ont": st.column_config.TextColumn(
+                "ID da ONT"
+            ),
         },
         key="injetoras_editor"
     )
 
-    # Botão para salvar as edições feitas na tabela
     if st.button("Salvar Alterações", type="primary"):
-        # Validação simples para evitar TAGs duplicadas
-        if edited_df['tag'].duplicated().any():
+        if edited_df['tag'].astype(str).duplicated().any():
             st.error("Erro: Existem 'IDs da Injetora' duplicados. Por favor, corrija antes de salvar.")
         else:
             save_data(edited_df)
