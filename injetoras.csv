@@ -1,0 +1,5 @@
+tag,grupo,ip_injetora,ip_dosador,ip_coletor,tag_ont,status_opcua,observacoes,id_dosador
+ID 534 - 217,A3,172.16.8.10,172.16.8.110,,,Conectado,,GC1
+204,A3,172.16.8.11,172.16.8.111,,,Não Conectado,,GC2
+222,A3,172.16.8.16,172.16.8.116,,,Conectado,,GC3
+ID 513 - 195,A3,172.16.8.19,172.16.8.119,,,Conectado,,GC6
