@@ -18,8 +18,8 @@ DATA_FILE = "injetoras.csv"
 
 def load_data():
     if os.path.exists(DATA_FILE):
-        # Garante que a coluna 'tag_ont' seja lida como texto
-        return pd.read_csv(DATA_FILE, dtype={'tag_ont': str})
+        # Garante que as colunas de texto sejam lidas como string
+        return pd.read_csv(DATA_FILE, dtype={'tag_ont': str, 'observacoes': str})
     else:
         return pd.DataFrame(columns=[
             'tag', 'grupo', 'ip_injetora', 'ip_dosador', 'id_dosador', 'ip_coletor',
@@ -153,7 +153,6 @@ elif page == "Mapa de Cartões":
             """
             html(modal_content_html, height=450, scrolling=True)
 
-# --- PÁGINA: Gerenciar Equipamentos (VERSÃO FINAL COM st.data_editor) ---
 elif page == "Gerenciar Equipamentos":
     st.header("Gerenciar Injetoras")
     st.info("Para adicionar, editar ou remover, use a tabela interativa abaixo. Clique em 'Salvar Alterações' para persistir as mudanças no arquivo.")
@@ -179,10 +178,13 @@ elif page == "Gerenciar Equipamentos":
             "ip_dosador": "IP Dosador Motan",
             "id_dosador": "ID Dosador Motan",
             "ip_coletor": "IP Syneco",
-            # AQUI ESTÁ A CORREÇÃO: Forçando a coluna a ser do tipo texto
             "tag_ont": st.column_config.TextColumn(
                 "ID da ONT"
             ),
+            # AQUI ESTÁ A CORREÇÃO
+            "observacoes": st.column_config.TextColumn(
+                "Observações"
+            )
         },
         key="injetoras_editor"
     )
