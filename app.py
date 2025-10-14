@@ -1,4 +1,4 @@
-aimport streamlit as st
+import streamlit as st
 import pandas as pd
 import os
 import platform
@@ -196,4 +196,5 @@ elif page == "Gerenciar Injetoras":
             save_data(edited_df)
             st.success("Alterações salvas com sucesso!")
             st.rerun()
+
 
