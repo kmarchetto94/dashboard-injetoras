@@ -101,10 +101,10 @@ elif page == "Mapa de Cartões":
         st.warning("Nenhuma injetora cadastrada.")
     else:
         grupos = ['Todos'] + sorted(df['grupo'].astype(str).unique().tolist())
-        grupo_selecionado = st.selectbox("Selecione um Grupo para visualizar:", grupos)
+        grupo_selecionado = st.selectbox("Selecione um Anexo para visualizar:", grupos)
         df_filtrado = df if grupo_selecionado == 'Todos' else df[df['grupo'] == grupo_selecionado]
         
-        status_icon_map = {"Conectado": ICONS["status_ok"], "Não Conectado": ICONS["status_nok"], "Indefinido": ICONS["status_off"]}
+        status_icon_map = {"Conectado": ICONS["status_ok"], "Não Conectado": ICONS["status_nok"], "Sem OPCUA": ICONS["status_off"]}
         COLUMNS = 4
         cols = st.columns(COLUMNS)
         for i, row in df_filtrado.iterrows():
@@ -137,13 +137,13 @@ elif page == "Mapa de Cartões":
             <div class="modal-body">
                 <h2>Injetora {data['tag']}</h2>
                 <div class="info-grid">
-                    <div class="info-item"><strong><img src="{ICONS['grupo']}">Grupo:</strong> {data['grupo']}</div>
+                    <div class="info-item"><strong><img src="{ICONS['grupo']}">Anexo:</strong> {data['grupo']}</div>
                     <div class="info-item"><strong><img src="{status_icon}">Status OPCUA:</strong> {data['status_opcua']}</div>
                     <div class="info-item"><strong><img src="{ICONS['ip']}">IP Injetora:</strong> <code>{data.get('ip_injetora') or 'N/A'}</code></div>
-                    <div class="info-item"><strong><img src="{ICONS['ip']}">IP Dosador:</strong> <code>{data.get('ip_dosador') or 'N/A'}</code></div>
-                    <div class="info-item"><strong><img src="{ICONS['id_card']}">ID do Dosador:</strong> <code>{data.get('id_dosador') or 'N/A'}</code></div>
-                    <div class="info-item"><strong><img src="{ICONS['ip']}">IP Coletor:</strong> <code>{data.get('ip_coletor') or 'N/A'}</code></div>
-                    <div class="info-item full-width"><strong><img src="{ICONS['ont']}">TAG da ONT:</strong> <code>{data.get('tag_ont') or 'N/A'}</code></div>
+                    <div class="info-item"><strong><img src="{ICONS['ip']}">IP Dosador Motan:</strong> <code>{data.get('ip_dosador') or 'N/A'}</code></div>
+                    <div class="info-item"><strong><img src="{ICONS['id_card']}">ID do Dosador Motan:</strong> <code>{data.get('id_dosador') or 'N/A'}</code></div>
+                    <div class="info-item"><strong><img src="{ICONS['ip']}">IP Syneco:</strong> <code>{data.get('ip_coletor') or 'N/A'}</code></div>
+                    <div class="info-item full-width"><strong><img src="{ICONS['ont']}">ID da ONT:</strong> <code>{data.get('tag_ont') or 'N/A'}</code></div>
                     <div class="info-item full-width">
                         <strong><img src="{ICONS['obs']}">Observações:</strong> <p>{data.get('observacoes') or 'Nenhuma'}</p>
                     </div>
@@ -152,90 +152,45 @@ elif page == "Mapa de Cartões":
             """
             html(modal_content_html, height=450, scrolling=True)
 
+# --- PÁGINA: Gerenciar Equipamentos (VERSÃO FINAL E SIMPLIFICADA) ---
 elif page == "Gerenciar Equipamentos":
-    tab1, tab2 = st.tabs(["📋 Gerenciar Injetoras", "➕ Adicionar Nova Injetora"])
-    with tab2:
-        st.header("Adicionar Nova Injetora")
-        with st.form("form_adicionar", clear_on_submit=True):
-            add_data = {}
-            add_data['tag'] = st.text_input("ID da Injetora*")
-            add_data['grupo'] = st.selectbox("Anexo", ["A3", "A4", "A5"])
-            add_data['ip_injetora'] = st.text_input("IP da Injetora")
-            add_data['ip_dosador'] = st.text_input("IP do Dosador Motan")
-            add_data['id_dosador'] = st.text_input("ID do Dosador Motan")
-            add_data['ip_coletor'] = st.text_input("IP Syneco")
-            add_data['tag_ont'] = st.text_input("ID ONT")
-            add_data['status_opcua'] = st.selectbox("Status OPCUA", ["Conectado", "Não Conectado", "Sem OPCUA"])
-            add_data['observacoes'] = st.text_area("Observações")
-            if st.form_submit_button("Salvar Nova Injetora", type="primary"):
-                if not add_data['tag']:
-                    st.error("O campo 'ID da Injetora' é obrigatório.")
-                elif add_data['tag'] in df['tag'].astype(str).tolist():
-                    st.error(f"A TAG '{add_data['tag']}' já existe.")
-                else:
-                    new_df = pd.DataFrame([add_data])
-                    df = pd.concat([df, new_df], ignore_index=True)
-                    save_data(df)
-                    st.success(f"Injetora {add_data['tag']} adicionada com sucesso!")
-                    st.rerun()
+    st.header("Gerenciar Injetoras")
+    st.info("Para adicionar, editar ou remover, use a tabela abaixo. Clique em 'Salvar Alterações' para persistir as mudanças.")
 
-    with tab1:
-        st.header("Lista de Injetoras Cadastradas")
-        edit_modal = Modal("Editar Equipamento", key="edit-modal")
-        
-        if df.empty:
-            st.info("Nenhuma injetora cadastrada. Adicione uma na aba '➕ Adicionar Nova Injetora'.")
+    # Usando st.data_editor para uma experiência de tabela completa e interativa
+    edited_df = st.data_editor(
+        df,
+        hide_index=True,
+        use_container_width=True,
+        num_rows="dynamic", # Permite adicionar e remover linhas
+        column_config={
+            "grupo": st.column_config.SelectboxColumn(
+                "Anexo",
+                options=["A3", "A4", "A5"],
+                required=True,
+            ),
+            "status_opcua": st.column_config.SelectboxColumn(
+                "Status OPCUA",
+                options=["Conectado", "Não Conectado", "Sem OPCUA"],
+                required=True,
+            ),
+            # Renomeando as colunas para o visual da tabela
+            "tag": "ID da Injetora",
+            "ip_injetora": "IP da Injetora",
+            "ip_dosador": "IP Dosador Motan",
+            "id_dosador": "ID Dosador Motan",
+            "ip_coletor": "IP Syneco",
+            "tag_ont": "ID da ONT"
+        },
+        key="injetoras_editor"
+    )
+
+    # Botão para salvar as edições feitas na tabela
+    if st.button("Salvar Alterações", type="primary"):
+        # Validação simples para evitar TAGs duplicadas
+        if edited_df['tag'].duplicated().any():
+            st.error("Erro: Existem 'IDs da Injetora' duplicados. Por favor, corrija antes de salvar.")
         else:
-            st.dataframe(df, hide_index=True, use_container_width=True)
-            st.divider()
-            
-            st.subheader("Ações")
-            action_cols = st.columns(2)
-            
-            with action_cols[0]:
-                tag_para_editar = st.selectbox("Selecione para Editar", [""] + df['tag'].tolist(), key="select_edit")
-                if tag_para_editar and st.button("✏️ Editar Injetora", use_container_width=True):
-                    selected_row = df[df['tag'] == tag_para_editar].iloc[0]
-                    st.session_state.injetora_para_editar = selected_row.to_dict()
-                    st.session_state.injetora_para_editar_index = df.index[df['tag'] == tag_para_editar][0]
-                    edit_modal.open()
-            
-            with action_cols[1]:
-                tag_para_remover = st.selectbox("Selecione para Excluir", [""] + df['tag'].tolist(), key="select_remove")
-                if tag_para_remover:
-                    if st.button(f"🗑️ Excluir Injetora {tag_para_remover}", type="primary", use_container_width=True):
-                        df_filtered = df[df['tag'] != tag_para_remover]
-                        save_data(df_filtered)
-                        st.success(f"Injetora {tag_para_remover} removida!")
-                        st.rerun()
-
-        if edit_modal.is_open() and 'injetora_para_editar' in st.session_state:
-            with modal.container():
-                # AQUI ESTÁ A CORREÇÃO: Usando um container com altura para garantir a rolagem
-                with st.container(height=500):
-                    injetora_data = st.session_state.injetora_para_editar
-                    index_to_update = st.session_state.injetora_para_editar_index
-                    with st.form("form_editar_modal"):
-                        st.subheader(f"Editando Injetora: {injetora_data['tag']}")
-                        edit_data = {}
-                        edit_data['tag'] = st.text_input("ID da Injetora*", value=injetora_data['tag'])
-                        edit_data['grupo'] = st.selectbox("Anexo", ["A3", "A4", "A5"], index=["A3", "A4", "A5"].index(injetora_data['grupo']))
-                        edit_data['ip_injetora'] = st.text_input("IP da Injetora", value=injetora_data.get('ip_injetora', ''))
-                        edit_data['ip_dosador'] = st.text_input("IP do Dosador Motan", value=injetora_data.get('ip_dosador', ''))
-                        edit_data['id_dosador'] = st.text_input("ID do Dosador Motan", value=injetora_data.get('id_dosador', ''))
-                        edit_data['ip_coletor'] = st.text_input("IP Syneco", value=injetora_data.get('ip_coletor', ''))
-                        edit_data['tag_ont'] = st.text_input("ID ONT", value=injetora_data.get('tag_ont', ''))
-                        edit_data['status_opcua'] = st.selectbox("Status OPCUA", ["Conectado", "Não Conectado", "Sem OPCUA"], index=["Conectado", "Não Conectado", "Indefinido"].index(injetora_data['status_opcua']))
-                        edit_data['observacoes'] = st.text_area("Observações", value=injetora_data.get('observacoes', ''))
-                        
-                        if st.form_submit_button("Salvar Alterações"):
-                            if edit_data['tag'] != injetora_data['tag'] and edit_data['tag'] in df['tag'].astype(str).tolist():
-                                st.error(f"A TAG '{edit_data['tag']}' já existe. Por favor, escolha uma TAG única.")
-                            else:
-                                for key, value in edit_data.items():
-                                    df.loc[index_to_update, key] = value
-                                save_data(df)
-                                st.success(f"Injetora {edit_data['tag']} atualizada!")
-                                edit_modal.close()
-
-                                st.rerun()
+            save_data(edited_df)
+            st.success("Alterações salvas com sucesso!")
+            st.rerun()
