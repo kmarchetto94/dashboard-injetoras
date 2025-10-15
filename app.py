@@ -22,8 +22,17 @@ def load_data():
         'tag_ont', 'status_opcua', 'observacoes', 'status_geral', 'dependente_syneco'
     ]
     
+    # AQUI ESTÁ A CORREÇÃO: Forçamos as colunas a serem do tipo 'str' (texto)
+    dtype_mapping = {
+        'tag': str,
+        'id_dosador': str,
+        'tag_ont': str,
+        'observacoes': str,
+        'dependente_syneco': str
+    }
+
     if os.path.exists(DATA_FILE):
-        df = pd.read_csv(DATA_FILE, dtype={'tag_ont': str, 'observacoes': str, 'tag': str, 'id_dosador': str})
+        df = pd.read_csv(DATA_FILE, dtype=dtype_mapping)
         for col in expected_columns:
             if col not in df.columns:
                 df[col] = ""
